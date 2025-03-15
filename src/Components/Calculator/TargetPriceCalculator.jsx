@@ -14,7 +14,7 @@ const TargetPriceCalculator = ({ onCalculate }) => {
 
   const marks = {
     1: "1X",
-    20: "20X",
+    25: "25X",
     50: "50X",
     75: "75X",
     100: "100X",
@@ -28,7 +28,7 @@ const TargetPriceCalculator = ({ onCalculate }) => {
       return alert("Please fill all fields correctly.")
     }
 
-    let targetPrice;
+    let targetPrice = 0;
 
     if (mode === "long") {
       targetPrice = entryPrice * (1 + (roi / (100 * leverage)));
@@ -43,28 +43,29 @@ const TargetPriceCalculator = ({ onCalculate }) => {
 
   const containerStyle = {
     width: "100%",
-    padding: "24px",
     backgroundColor: "white",
     borderRadius: "12px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.0)",
     display: "flex",
     flexDirection: "column",
-    gap: "16px",
+    gap: "20px",
   }
 
   const inputStyle = {
     width: "100%",
-    padding: "8px 12px",
-    border: "1px solid #e2e8f0",
-    borderRadius: "6px",
-    fontSize: "14px",
+    padding: "8px 40px 8px 12px",
+    borderRadius: "12px",
+    fontSize: "16px",
+    fontFamily: 'PP Neue Montreal',
+    backgroundColor: '#F4F7FF',
   }
 
   const buttonStyle = {
     width: "100%",
     padding: "10px",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "12px",
+    fontSize: "20px",
     cursor: "pointer",
     fontWeight: "bold",
     transition: "background-color 0.3s",
@@ -72,13 +73,13 @@ const TargetPriceCalculator = ({ onCalculate }) => {
 
   const longButtonStyle = {
     ...buttonStyle,
-    backgroundColor: inputs.mode === "long" ? "#10B981" : "#E5E7EB",
+    backgroundColor: inputs.mode === "long" ? "#40DA69" : "#F4F7FF",
     color: inputs.mode === "long" ? "white" : "black",
   }
 
   const shortButtonStyle = {
     ...buttonStyle,
-    backgroundColor: inputs.mode === "short" ? "#EF4444" : "#E5E7EB",
+    backgroundColor: inputs.mode === "short" ? "#EE3F3F" : "#F4F7FF",
     color: inputs.mode === "short" ? "white" : "black",
   }
 
@@ -89,45 +90,26 @@ const TargetPriceCalculator = ({ onCalculate }) => {
   }
 
   return (
-    <div style={containerStyle}>
-      <div style={{ position: "relative" }}>
-        <input
-          type="number"
-          value={inputs.coinPrice}
-          onChange={(e) => setInputs({ ...inputs, coinPrice: e.target.value })}
-          placeholder="Coin Price"
-          style={inputStyle}
-        />
-        <span
-          style={{
-            position: "absolute",
-            right: "12px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            fontSize: "14px",
-            color: "#6B7280",
-          }}
-        >
-          USDT
-        </span>
-      </div>
+    <div style={containerStyle} className="md:pr-[20px] pr-0">
+      <hr class="my-[10px] h-0.5 border-t-0 bg-neutral-100" />
+     
 
-      <div style={{ display: "flex", gap: "8px" }}>
-        <button style={longButtonStyle} onClick={() => setInputs({ ...inputs, mode: "long" })}>
+      <div style={{ display: "flex", gap: "14px" }}>
+        <button style={longButtonStyle} className="!font-[450]" onClick={() => setInputs({ ...inputs, mode: "long" })}>
           Long
         </button>
-        <button style={shortButtonStyle} onClick={() => setInputs({ ...inputs, mode: "short" })}>
+        <button style={shortButtonStyle} className="!font-[450]" onClick={() => setInputs({ ...inputs, mode: "short" })}>
           Short
         </button>
       </div>
 
       <div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", marginBottom: "8px" }}>
-          <span>Leverage: {inputs.leverage}X</span>
-          <span>{marks[inputs.leverage]}</span>
+        <div className="flex items-center justify-center bg-blue-50 text-gray-600 text-base rounded-[12px] py-2 w-full">
+          {inputs.leverage}X
         </div>
         <Slider
           min={1}
+          className="!mt-[20px] !m-[0px] !ml-[10px] !mr-[15px]"
           max={125}
           marks={marks}
           value={inputs.leverage}
@@ -135,14 +117,14 @@ const TargetPriceCalculator = ({ onCalculate }) => {
         />
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" } } className="pt-[32px]">
         <div style={{ position: "relative" }}>
           <input
             type="number"
             value={inputs.entryPrice}
             onChange={(e) => setInputs({ ...inputs, entryPrice: e.target.value })}
-            placeholder="Entry Price"
             style={inputStyle}
+            placeholder="Entry Price"
           />
           <span
             style={{
@@ -150,8 +132,8 @@ const TargetPriceCalculator = ({ onCalculate }) => {
               right: "12px",
               top: "50%",
               transform: "translateY(-50%)",
-              fontSize: "14px",
-              color: "#6B7280",
+              fontSize: "16px",
+              color: "#020202",
             }}
           >
             USDT
@@ -160,10 +142,10 @@ const TargetPriceCalculator = ({ onCalculate }) => {
         <div style={{ position: "relative" }}>
           <input
             type="number"
-            value={inputs.quantity}
+            value={inputs.roi}
             onChange={(e) => setInputs({ ...inputs, roi: e.target.value })}
-            placeholder="ROI"
             style={inputStyle}
+            placeholder="ROI"
           />
           <span
             style={{
@@ -171,12 +153,13 @@ const TargetPriceCalculator = ({ onCalculate }) => {
               right: "12px",
               top: "50%",
               transform: "translateY(-50%)",
-              fontSize: "14px",
-              color: "#6B7280",
+              fontSize: "16px",
+              color: "#020202",
             }}
           >
             %
           </span>
+
         </div>
       </div>
 

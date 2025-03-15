@@ -1,5 +1,6 @@
-@import "tailwindcss";
 
+@import url('https://fonts.cdnfonts.com/css/pp-neue-montreal');
+@import "tailwindcss";
 .body {
   margin: 0px;
 }
@@ -8,9 +9,32 @@ html, body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  font-family: 'PP Neue Montreal', sans-serif; /* Set global font */
+}
+.ant-table-container {
+  border-left: none !important;
+  border-right: none !important;
+}
+.ant-btn {
+  font-family: 'PP Neue Montreal', sans-serif; 
 }
 
-#root {
+.ant-table {
+  font-family: 'PP Neue Montreal', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 450px !important; 
+}
+.ant-tabs {
+  font-family: 'PP Neue Montreal', sans-serif !important; 
+}
+.ant-slider {
+  font-family: 'PP Neue Montreal', sans-serif !important; 
+}
+:where(.ant-table) {
+  border-left: none !important;
+  border-right: none !important;
+}
+#root { 
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -19,72 +43,16 @@ html, body {
 main {
   flex: 1; /* Mendorong footer ke bawah */
 }
+.ant-table-thead > tr > th {
+  padding: 12px !important;
+  border: none !important;
+  font-weight: 800 !important;
+  font-size: 16px !important;
 
-/* :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-} */
+} 
+.ant-table-tbody > tr > td {
+  border-left: none !important;
+  border-right: none !important;
+  
+  
+} 
