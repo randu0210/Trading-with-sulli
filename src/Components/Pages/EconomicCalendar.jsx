@@ -87,8 +87,8 @@ const EconomicCalendar = () => {
     };
 
     const fetchLastWeekData = () => {
-        const startDate = dayjs().subtract(1, "week").startOf("week").format("YYYY-MM-DD");
-        const endDate = dayjs().subtract(1, "week").endOf("week").format("YYYY-MM-DD");
+        const startDate = dayjs().format("YYYY-MM-DD");
+        const endDate = dayjs().add(1, "day").format("YYYY-MM-DD");
         fetchCalendarData(startDate, endDate);
     };
 
@@ -129,7 +129,7 @@ const EconomicCalendar = () => {
                     {currency}
                 </span>
             ),
-            onCell:() => ({ style:{fontWeight:300}}) ,
+            onCell:() => ({ style:{fontWeight:400}}) ,
             align: "center"
         },
         {
@@ -158,9 +158,9 @@ const EconomicCalendar = () => {
             onCell:() => ({ style:{fontWeight:450}}) ,
             align: "center"
         },
-        { title: "Actual", dataIndex: "actual", key: "actual", width: 80, className: "text-center", align: "center",onCell:() => ({ style:{fontWeight:300}}) , },
-        { title: "Forecast", dataIndex: "forecast", key: "forecast", width: 80, className: "text-center", align: "center",onCell:() => ({ style:{fontWeight:300}}) , },
-        { title: "Previous", dataIndex: "previous", key: "previous", width: 80, className: "text-center", align: "center",onCell:() => ({ style:{fontWeight:300}}) , },
+        { title: "Actual", dataIndex: "actual", key: "actual", width: 80, className: "text-center", align: "center",onCell:() => ({ style:{fontWeight:400}}) , },
+        { title: "Forecast", dataIndex: "forecast", key: "forecast", width: 80, className: "text-center", align: "center",onCell:() => ({ style:{fontWeight:400}}) , },
+        { title: "Previous", dataIndex: "previous", key: "previous", width: 80, className: "text-center", align: "center",onCell:() => ({ style:{fontWeight:400}}) , },
     ];
 
     return (
@@ -180,7 +180,7 @@ const EconomicCalendar = () => {
                                     fontSize: "0.875rem" 
                                 }
                             }}>
-                                Last week
+                                Today
                             </Button>
                             <Button onClick={() => handleButtonClick("thisWeek", fetchThisWeekData)} className="text-sm md:text-base !font-[400] !rounded-[12px] !px-[22px] !py-[20px]" style={{
                                 fontSize: "1rem", // Default (text-sm)

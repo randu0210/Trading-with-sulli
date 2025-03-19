@@ -311,7 +311,7 @@ const Chart = () => {
       <Header />
       <div className="px-[12px] md:px-[274px]">
         <div className="mb-6">
-          <div className="flex items-center gap-[12px] pt-[49px] md:pt-[72px]">
+          <div className="flex items-center gap-[12px] pt-[49px] md:pt-[72px] pb-[8px]">
             <img src="/src/assets/US.svg" alt="US Flag" className="w-5 h-5" />
             <span className="text-[16px] font-[400]">
               USD | {formattedDateTime} |{" "}
@@ -324,7 +324,7 @@ const Chart = () => {
               )}
             </span>
           </div>
-          <h1 className="text-[32px] md:text-[54px] font-[450]">{data.data}</h1>
+          <h1 className="text-[32px] md:text-[54px] font-[450] leading-[40px]">{data.data}</h1>
 
           <div className="flex gap-[8px] md:gap-[20px] py-[24px]">
             <button
@@ -347,11 +347,11 @@ const Chart = () => {
             </button>
           </div>
 
-          <p className="text-[#242424] text-[20px] leading-[32px]">{description}</p>
+          <p className="text-[#242424] md:text-[20px] text-[16px] leading-[32px]">{description}</p>
         </div>
 
-        <div className="shadow-sm rounded-[12px] mb-[140px] pb-2">
-          <div className="flex items-center justify-between px-4 pt-4">
+        <div className="border border-[#CCCCCC] rounded-[12px] mb-[140px] pb-2">
+          <div className="flex items-center justify-between md:px-[40px] px-[12px] py-[20px]">
             <div className="flex gap-4">
               <button
                 className="px-4 py-2 rounded-lg md:text-[16px] text-[14px]"
@@ -383,7 +383,7 @@ const Chart = () => {
           <hr className="my-[10px] mx-3 h-0.5 border-t-0 bg-neutral-100" />
           {chartData ? (
             <div className="w-full overflow-x-auto">
-              <div className="min-h-[300px] min-w-[700px] px-5">
+              <div className="min-h-[300px] min-w-[700px] md:px-[40px] px-[12px] md:pb-[20px] pb-[16px]">
                 <Bar ref={chartRef} data={chartData} options={chartOptions} />
               </div>
             </div>
