@@ -26,6 +26,7 @@ import ImpactMedium from "../../assets/impact2.svg";
 import ImpactLow from "../../assets/impact1.svg";
 import USFlag from "../../assets/US.svg";
 import html2canvas from "html2canvas";
+import { useLocation } from "react-router-dom";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -48,6 +49,9 @@ const COUNTRY = "united states";
 const API_KEY = import.meta.env.VITE_API_KEY;
 
 const Chart = () => {
+  const location = useLocation();
+  const data = location.state.record;
+
   const [chartData, setChartData] = useState(null);
   const [chartOptions, setChartOptions] = useState({});
   const [description, setDescription] = useState("-");
@@ -55,105 +59,116 @@ const Chart = () => {
   const [theTitle, setTitle] = useState("");
   const [activeTab, setActiveTab] = useState("summary");
   const chartRef = useRef(null);
-  const data = useSelector((state) => state.calendar.dataCalendar);
+  // const data = useSelector((state) => state.calendar.dataCalendar);
   const formattedDateTime = dayjs(`${data.date} ${data.time}`)
     .tz("America/New_York")
     .format("DD MMM YYYY, HH:mm [UTC]Z");
 
-    const endDate = dayjs(data?.date).format("YYYY-MM-DD");
-    const startDate = dayjs(data?.date).subtract(1, "year").format("YYYY-MM-DD");
-    const [forecastLabel, setForecastLabel] = useState("");
-    const chartDataRef = useRef();
-    const [selectedRange, setSelectedRange] = useState("1Y"); // Default is 1Y
+  const endDate = dayjs(data?.date).format("YYYY-MM-DD");
+  const startDate = dayjs(data?.date).subtract(1, "year").format("YYYY-MM-DD");
+  const [forecastLabel, setForecastLabel] = useState("");
+  const chartDataRef = useRef();
+  const [selectedRange, setSelectedRange] = useState("1Y"); // Default is 1Y
 
-    useEffect(() => {
-      fetchData(startDate, endDate);
-      fetchDescription();
-    }, [startDate, endDate]);
-    useEffect(() => {
-      fetchData(
-        selectedRange === "Max Year" ? "1900-01-01" : dayjs().subtract(parseInt(selectedRange), "year").format("YYYY-MM-DD"),
-        endDate
+  useEffect(() => {
+    fetchData(startDate, endDate);
+    fetchDescription();
+  }, [startDate, endDate]);
+  useEffect(() => {
+    fetchData(
+      selectedRange === "Max Year"
+        ? "1900-01-01"
+        : dayjs()
+            .subtract(parseInt(selectedRange), "year")
+            .format("YYYY-MM-DD"),
+      endDate
+    );
+
+    setChartData(null);
+  }, [selectedRange]);
+
+  useEffect(() => {
+    chartDataRef.current = chartData; // Update the ref whenever chartData changes
+  }, [chartData]);
+
+  const fetchDataForecast = async () => {
+    const category = data?.category;
+    try {
+      const response = await axios.get(
+        `https://api.tradingeconomics.com/forecast/country/united%20states/indicator/${category}?c=${API_KEY}`
       );
-    }, [selectedRange]);
-  
-    useEffect(() => {
-      chartDataRef.current = chartData; // Update the ref whenever chartData changes
-    }, [chartData]);
-  
-    const fetchDataForecast = async () => {
-      const category = data?.category;
-      try {
-        const response = await axios.get(
-          `https://api.tradingeconomics.com/forecast/country/united%20states/indicator/${category}?c=${API_KEY}`
-        );
-        const apiData = response.data;
-    
-        // Extract forecast data
-        const forecastData = apiData[0]; // Assuming the response is an array with one object
-    
-        // Extract labels (q1_date to q4_date)
-        const FRlabels = [
-          dayjs(forecastData.q1_date).format("MMM YYYY"),
-          dayjs(forecastData.q2_date).format("MMM YYYY"),
-          dayjs(forecastData.q3_date).format("MMM YYYY"),
-          dayjs(forecastData.q4_date).format("MMM YYYY"),
-        ];
-  
-        setForecastLabel([
-          dayjs(forecastData.q1_date).format("MMM YYYY"),
-          dayjs(forecastData.q2_date).format("MMM YYYY"),
-          dayjs(forecastData.q3_date).format("MMM YYYY"),
-          dayjs(forecastData.q4_date).format("MMM YYYY"),
-        ]);
-    
-        // Extract values (q1 to q4)
-        const forecastValues = [
-          forecastData.q1,
-          forecastData.q2,
-          forecastData.q3,
-          forecastData.q4,
-        ];
-    
-        // Update chart data with forecast
-        // setChartData((prevData) => ({
-        //   ...prevData,
-        //   labels,
-        //   datasets: [
-        //     {
-        //       label: "Forecast",
-        //       data: values,
-        //       borderColor: "#ffa500",
-        //       backgroundColor: "transparent",
-        //       borderWidth: 1,
-        //     },
-        //   ],
-        // }));
+      const apiData = response.data;
+
+      // Extract forecast data
+      const forecastData = apiData[0]; // Assuming the response is an array with one object
+
+      // Extract labels (q1_date to q4_date)
+      const FRlabels = [
+        dayjs(forecastData.q1_date).format("MMM YYYY"),
+        dayjs(forecastData.q2_date).format("MMM YYYY"),
+        dayjs(forecastData.q3_date).format("MMM YYYY"),
+        dayjs(forecastData.q4_date).format("MMM YYYY"),
+      ];
+
+      setForecastLabel([
+        dayjs(forecastData.q1_date).format("MMM YYYY"),
+        dayjs(forecastData.q2_date).format("MMM YYYY"),
+        dayjs(forecastData.q3_date).format("MMM YYYY"),
+        dayjs(forecastData.q4_date).format("MMM YYYY"),
+      ]);
+
+      // Extract values (q1 to q4)
+      const forecastValues = [
+        forecastData.q1,
+        forecastData.q2,
+        forecastData.q3,
+        forecastData.q4,
+      ];
+
+      // Update chart data with forecast
+      // setChartData((prevData) => ({
+      //   ...prevData,
+      //   labels,
+      //   datasets: [
+      //     {
+      //       label: "Forecast",
+      //       data: values,
+      //       borderColor: "#ffa500",
+      //       backgroundColor: "transparent",
+      //       borderWidth: 1,
+      //     },
+      //   ],
+      // }));
       const historicalLabels = chartDataRef.current?.labels || [];
       const historicalValues = chartDataRef.current?.datasets[0]?.data || [];
-  
+
       // Gabungkan label dan nilai
       const combinedLabels = [...new Set([...historicalLabels, ...FRlabels])];
       const combinedValues = [...historicalValues, ...forecastValues];
-  
+
       setChartData({
         labels: combinedLabels,
         datasets: [
           {
             label: "Value",
             data: historicalValues,
-            backgroundColor: selectedRange === "1Y" 
-  ? historicalValues.map((v) => (v < 0 ? "#f87171" : "#007bff")) 
-  : "#007bff",
-            borderColor: selectedRange === "1Y" ?  "transparent" : "#007bff",
+            backgroundColor:
+              selectedRange === "1Y"
+                ? historicalValues.map((v) => (v < 0 ? "#f87171" : "#007bff"))
+                : "#007bff",
+            borderColor: selectedRange === "1Y" ? "transparent" : "#007bff",
             borderWidth: 1,
-            pointBackgroundColor: selectedRange === "1Y" 
-        ? values.map((v) => (v < 0 ? "#f87171" : "#007bff")) 
-        : "#007bff",
+            pointBackgroundColor:
+              selectedRange === "1Y"
+                ? values.map((v) => (v < 0 ? "#f87171" : "#007bff"))
+                : "#007bff",
           },
           {
             label: "Forecast Data",
-            data: [...Array(historicalValues.length).fill(null), ...forecastValues],
+            data: [
+              ...Array(historicalValues.length).fill(null),
+              ...forecastValues,
+            ],
             borderColor: "#ffa500",
             backgroundColor: "#ffa500", // Ensure no fill color
             borderWidth: 2,
@@ -163,105 +178,157 @@ const Chart = () => {
           },
         ],
       });
-      
-      } catch (error) {
-        console.error("Error fetching forecast data:", error);
-      }
-    };
-  
-    const fetchData = async (startDate, endDate) => {
-      const category = data?.category;
-      try {
-        const response = await axios.get(
-          `https://api.tradingeconomics.com/historical/country/${COUNTRY}/indicator/${category}/${startDate}/${endDate}?c=${API_KEY}`
+    } catch (error) {
+      console.error("Error fetching forecast data:", error);
+    }
+  };
+
+  const fetchData = async (startDate, endDate) => {
+    const category = data?.category;
+    try {
+      const response = await axios.get(
+        `https://api.tradingeconomics.com/historical/country/${COUNTRY}/indicator/${category}/${startDate}/${endDate}?c=${API_KEY}`
+      );
+      const apiData = response.data;
+
+      // Aggregate data by month
+      const aggregatedData = {};
+      apiData.forEach((item) => {
+        const date = new Date(item.DateTime);
+        const monthYear = `${date.toLocaleString("en-US", {
+          month: "short",
+        })} ${date.getFullYear()}`;
+
+        if (!aggregatedData[monthYear]) {
+          aggregatedData[monthYear] = {
+            total: 0,
+            count: 0,
+          };
+        }
+        aggregatedData[monthYear].total += item.Value;
+        aggregatedData[monthYear].count += 1;
+      });
+
+      // Create labels and values from aggregated data
+      const labels = Object.keys(aggregatedData);
+      const values = labels.map((monthYear) => {
+        return (
+          aggregatedData[monthYear].total / aggregatedData[monthYear].count
         );
-        const apiData = response.data;
-  
-        // Aggregate data by month
-        const aggregatedData = {};
-        apiData.forEach((item) => {
-          const date = new Date(item.DateTime);
-          const monthYear = `${date.toLocaleString("en-US", { month: "short" })} ${date.getFullYear()}`;
-  
-          if (!aggregatedData[monthYear]) {
-            aggregatedData[monthYear] = {
-              total: 0,
-              count: 0,
-            };
+      });
+
+      // Filter data berdasarkan range yang dipilih
+      let filteredValues = [];
+      let filteredLabels = [];
+
+      if (selectedRange === "1Y") {
+        // Ambil 12 data terakhir untuk 1 tahun
+        filteredValues = values.slice(-12);
+        filteredLabels = labels.slice(-12);
+      } else if (selectedRange === "3Y") {
+        // Ambil 12 data dengan interval 3 untuk 3 tahun
+        for (let i = values.length - 1; i >= 0; i -= 3) {
+          filteredValues.unshift(values[i]);
+          filteredLabels.unshift(labels[i]);
+          if (filteredValues.length >= 12) break;
+        }
+      } else if (selectedRange === "5Y") {
+        // Ambil 12 data dengan interval 5 untuk 5 tahun
+        for (let i = values.length - 1; i >= 0; i -= 5) {
+          filteredValues.unshift(values[i]);
+          filteredLabels.unshift(labels[i]);
+          if (filteredValues.length >= 12) break;
+        }
+      } else if (selectedRange === "10Y") {
+        // Ambil 12 data dengan interval 10 untuk 10 tahun
+        for (let i = values.length - 1; i >= 0; i -= 10) {
+          filteredValues.unshift(values[i]);
+          filteredLabels.unshift(labels[i]);
+          if (filteredValues.length >= 12) break;
+        }
+      } else if (selectedRange === "Max Year") {
+        // Ambil data berdasarkan tahun yang berbeda
+        const uniqueYears = new Set();
+        for (let i = values.length - 1; i >= 0; i--) {
+          const year = labels[i].split(" ")[1];
+          if (!uniqueYears.has(year)) {
+            uniqueYears.add(year);
+            filteredValues.unshift(values[i]);
+            filteredLabels.unshift(labels[i]);
           }
-          aggregatedData[monthYear].total += item.Value;
-          aggregatedData[monthYear].count += 1;
-        });
-  
-        // Create labels and values from aggregated data
-        const labels = Object.keys(aggregatedData);
-        const values = labels.map((monthYear) => {
-          return aggregatedData[monthYear].total / aggregatedData[monthYear].count; // Calculate average
-        });
-  
-        setChartData({
-          labels,
-          datasets: [
-            {
-              label: "Value",
-              data: values,
-              backgroundColor: selectedRange === "1Y" 
-  ? values.map((v) => (v < 0 ? "#f87171" : "#007bff")) 
-  : "#007bff",
-              borderColor: selectedRange === "1Y" ?  "transparent" : "#007bff",
-              borderWidth: 2, // Make the line prominent
-              pointRadius: 4, // Ensures points are visible
-              fill: false, // Disables filling under the line
-              tension: 0.3, // Adds slight curve to the line
-              pointBackgroundColor: selectedRange === "1Y" 
-        ? values.map((v) => (v < 0 ? "#f87171" : "#007bff")) 
-        : "#007bff",
-            },
-          ],
-        });
-  
-        setChartOptions({
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            title: { display: true, text: "", font: { size: 18 } },
-          },
-          scales: {
-            x: { grid: { display: false }, ticks: { font: { size: 12 } } },
-            y: { grid: { display: false }, ticks: { font: { size: 12 } } },
-          },
-        });
-  
-        if( activeTab === "forecast"){
-          fetchDataForecast()
         }
-  
-        if (activeTab === "stats") {
-          setTimeout(() => {
-            addTrendLine()
-          }, "2000");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
       }
-    };    
 
+      // Update labels dan values dengan data yang sudah difilter
+      labels.length = 0;
+      labels.push(...filteredLabels);
+      values.length = 0;
+      values.push(...filteredValues);
 
+      setChartData({
+        labels,
+        datasets: [
+          {
+            label: "Value",
+            data: values,
+            backgroundColor:
+              selectedRange === "1Y"
+                ? values.map((v) => (v < 0 ? "#f87171" : "#007bff"))
+                : "#007bff",
+            borderColor: selectedRange === "1Y" ? "transparent" : "#007bff",
+            borderWidth: 2, // Make the line prominent
+            pointRadius: 4, // Ensures points are visible
+            fill: false, // Disables filling under the line
+            tension: 0.3, // Adds slight curve to the line
+            pointBackgroundColor:
+              selectedRange === "1Y"
+                ? values.map((v) => (v < 0 ? "#f87171" : "#007bff"))
+                : "#007bff",
+          },
+        ],
+      });
 
-  
+      setChartOptions({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: "", font: { size: 18 } },
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+          y: { grid: { display: false }, ticks: { font: { size: 12 } } },
+        },
+      });
+
+      if (activeTab === "forecast") {
+        fetchDataForecast();
+      }
+
+      if (activeTab === "stats") {
+        setTimeout(() => {
+          addTrendLine();
+        }, "2000");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   const fetchDescription = async () => {
-    const formattedDate = dayjs(data?.date).subtract(1, "month").format("YYYY-MM-DD");
+    const formattedDate = dayjs(data?.date)
+      .subtract(1, "month")
+      .format("YYYY-MM-DD");
     const endDate = dayjs(data?.date).add(1, "day").format("YYYY-MM-DD");
     const category = data?.category;
-  
+
     try {
       const response = await axios.get(
         `https://api.tradingeconomics.com/news/country/${COUNTRY}/${category}?c=${API_KEY}&d1=${formattedDate}&d2=${endDate}&f=json`
       );
       const latestData = _.maxBy(response.data, (item) => new Date(item.date));
       let descriptionText = latestData?.description || "-";
-  
+
       if (latestData?.id) {
         const paragraphResponse = await axios.get(
           `https://be.tradewithsuli.com/api/paragraph?id=${latestData.id}`
@@ -269,28 +336,29 @@ const Chart = () => {
         setDescription2(paragraphResponse.data.paragraph);
         setTitle(paragraphResponse.data.title);
       }
-  
+
       setDescription(latestData?.description);
-      
     } catch (error) {
       console.error("Error fetching description:", error);
     }
   };
 
-
-
-  
-
   const addTrendLine = () => {
     const latestChartData = chartDataRef.current; // Access the latest data from the ref
     if (latestChartData) {
       const values = latestChartData.datasets[0].data;
-      const trend = values.map((_, i) => values[0] + (values[values.length - 1] - values[0]) * (i / (values.length - 1)));
-  
+      const trend = values.map(
+        (_, i) =>
+          values[0] +
+          (values[values.length - 1] - values[0]) * (i / (values.length - 1))
+      );
+
       setChartData((prevData) => ({
         ...prevData,
         datasets: [
-          ...prevData.datasets.filter((dataset) => dataset.label !== "Trend Line"),
+          ...prevData.datasets.filter(
+            (dataset) => dataset.label !== "Trend Line"
+          ),
           {
             label: "Trend Line",
             data: trend,
@@ -316,8 +384,14 @@ const Chart = () => {
           prevData
             ? {
                 ...prevData,
-                labels: _.filter(prevData.labels, (label) => !forecastLabel.includes(label)), 
-                datasets: _.filter(prevData.datasets, (dataset) => dataset.label !== "Forecast Data"),
+                labels: _.filter(
+                  prevData.labels,
+                  (label) => !forecastLabel.includes(label)
+                ),
+                datasets: _.filter(
+                  prevData.datasets,
+                  (dataset) => dataset.label !== "Forecast Data"
+                ),
               }
             : null
         );
@@ -328,8 +402,16 @@ const Chart = () => {
         prevData
           ? {
               ...prevData,
-              labels: _.filter(prevData.labels, (label) => !forecastLabel.includes(label)), 
-              datasets: _.filter(prevData.datasets, (dataset) => dataset.label !== "Trend Line" && dataset.label !== "Forecast Data"),
+              labels: _.filter(
+                prevData.labels,
+                (label) => !forecastLabel.includes(label)
+              ),
+              datasets: _.filter(
+                prevData.datasets,
+                (dataset) =>
+                  dataset.label !== "Trend Line" &&
+                  dataset.label !== "Forecast Data"
+              ),
             }
           : null
       );
@@ -337,41 +419,102 @@ const Chart = () => {
   }, [activeTab]);
 
   const fetchLast3Years = () => {
-    fetchData(dayjs().subtract(3, "year").format("YYYY-MM-DD"), endDate)
-    }
+    fetchData(dayjs().subtract(3, "year").format("YYYY-MM-DD"), endDate);
+  };
 
-    const exportCSV = () => {
-      if (!chartData) return;
-    
-      const { labels, datasets } = chartData;
-    
-      // Convert data to CSV format
-      let csvContent = "data:text/csv;charset=utf-8,Date,Value\n";
-    
-      labels.forEach((label, index) => {
-        let row = `${label},${datasets[0].data[index]}`;
-        csvContent += row + "\n";
+  const exportCSV = () => {
+    if (!chartData) return;
+
+    const { labels, datasets } = chartData;
+
+    // Convert data to CSV format
+    let csvContent = "data:text/csv;charset=utf-8,Date,Value\n";
+
+    labels.forEach((label, index) => {
+      let row = `${label},${datasets[0].data[index]}`;
+      csvContent += row + "\n";
+    });
+
+    // Create a downloadable link
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "chart_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportChart = () => {
+    const chartContainer = document.querySelector(".chart-container");
+    const elementsToHide = document.querySelectorAll(".hide-in-screenshot");
+    const elementsToShow = document.querySelectorAll(".show-in-screenshot");
+
+    if (chartContainer) {
+      // Sembunyikan elemen yang tidak diinginkan
+      elementsToHide.forEach((el) => {
+        el.style.display = "none";
       });
-    
-      // Create a downloadable link
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "chart_data.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
+      // Tampilkan elemen yang hanya untuk screenshot
+      elementsToShow.forEach((el) => {
+        el.style.display = "block";
+      });
 
-    const exportChart = () => {
-      const chart = chartRef.current;
-      if (chart) {
-        const link = document.createElement("a");
-        link.href = chart.toBase64Image();
-        link.download = "chart.jpg";
-        link.click();
+      html2canvas(chartContainer, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        ignoreElements: (element) => {
+          const style = window.getComputedStyle(element);
+          return (
+            style.color.includes("oklch") ||
+            style.backgroundColor.includes("oklch") ||
+            style.borderColor.includes("oklch")
+          );
+        },
+      })
+        .then((canvas) => {
+          // Kembalikan state display semua elemen
+          elementsToHide.forEach((el) => {
+            el.style.display = "";
+          });
+          elementsToShow.forEach((el) => {
+            el.style.display = "none";
+          });
+
+          const link = document.createElement("a");
+          link.href = canvas.toDataURL("image/jpeg");
+          link.download = "chart.jpg";
+          link.click();
+        })
+        .catch((error) => {
+          // Pastikan elemen dikembalikan ke state awal jika terjadi error
+          elementsToHide.forEach((el) => {
+            el.style.display = "";
+          });
+          elementsToShow.forEach((el) => {
+            el.style.display = "none";
+          });
+          console.error("Error capturing chart:", error);
+        });
+    }
+  };
+
+  // Tambahkan style untuk show-in-screenshot
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      .show-in-screenshot {
+        display: none;
       }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
     };
+  }, []);
 
   return (
     <div className="p-0 w-full min-h-screen bg-white">
@@ -383,20 +526,38 @@ const Chart = () => {
             <span className="text-[16px] font-[400]">
               USD | {data.date} |{" "}
               {data.impact === 3 ? (
-                <img src={ImpactHigh} alt="High Impact" className="w-5 h-5 inline-block" />
+                <img
+                  src={ImpactHigh}
+                  alt="High Impact"
+                  className="w-5 h-5 inline-block"
+                />
               ) : data.impact === 2 ? (
-                <img src={ImpactMedium} alt="Medium Impact" className="w-5 h-5 inline-block" />
+                <img
+                  src={ImpactMedium}
+                  alt="Medium Impact"
+                  className="w-5 h-5 inline-block"
+                />
               ) : (
-                <img src={ImpactLow} alt="Low Impact" className="w-5 h-5 inline-block" />
+                <img
+                  src={ImpactLow}
+                  alt="Low Impact"
+                  className="w-5 h-5 inline-block"
+                />
               )}
             </span>
           </div>
-          <h1 className="text-[32px] md:text-[54px] font-[450] leading-[40px]">{data.data}</h1>
+          <h1 className="text-[32px] md:text-[54px] font-[450] leading-[40px]">
+            {data.data}
+          </h1>
 
           <div className="flex gap-[8px] md:gap-[20px] py-[24px]">
             <button
-              className={`px-4 py-2 rounded-full ${activeTab === 'summary' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
-              onClick={() => setActiveTab('summary')}
+              className={`px-4 py-2 rounded-full ${
+                activeTab === "summary"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100"
+              }`}
+              onClick={() => setActiveTab("summary")}
             >
               Summary
             </button>
@@ -407,81 +568,143 @@ const Chart = () => {
               Stats
             </button> */}
             <button
-              className={`px-4 py-2 rounded-full ${activeTab === 'forecast' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
-              onClick={() => setActiveTab('forecast')}
+              className={`px-4 py-2 rounded-full ${
+                activeTab === "forecast"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100"
+              }`}
+              onClick={() => setActiveTab("forecast")}
             >
               Forecast
             </button>
           </div>
 
-          <p className="text-[#242424] md:text-[20px] text-[16px] leading-[32px]">{description}</p>
-          <h1 className="text-[32px] md:text-[32px] font-[450] leading-[40px] mt-6 mb-3">{theTitle}</h1>
-          <p className="text-[#242424] md:text-[20px] text-[16px] leading-[32px]">{description2}</p>
+          <p className="text-[#242424] md:text-[20px] text-[16px] leading-[32px]">
+            {description}
+          </p>
+          <h1 className="text-[32px] md:text-[32px] font-[450] leading-[40px] mt-6 mb-3">
+            {theTitle}
+          </h1>
+          <p className="text-[#242424] md:text-[20px] text-[16px] leading-[32px]">
+            {description2}
+          </p>
           <br></br>
           <br></br>
         </div>
 
-        <div className="border border-[#CCCCCC] rounded-[12px] mb-[140px] pb-2">
-          <div className="flex items-center justify-between md:px-[40px] px-[12px] py-[20px]">
-          <div className="flex gap-4">
-  {[
-    { label: "1Y", years: 1 },
-    { label: "3Y", years: 3 },
-    { label: "5Y", years: 5 },
-    { label: "10Y", years: 10 },
-    { label: "Max Year", years: 100 } // Set a large number for "Max Year"
-  ].map(({ label, years }) => (
-    <button
-      key={label}
-      className={`px-4 py-2 rounded-lg md:text-[16px] text-[14px] ${
-        selectedRange === label ? "bg-blue-600 text-white" : "bg-gray-100"
-      }`}
-      onClick={() => {
-        setSelectedRange(label);
-      }}
-    >
-      {label}
-    </button>
-  ))}
-</div>
-<div className="flex gap-4 mt-4">
-  <button
-    className="px-4 py-2 shadow-sm rounded-[12px] md:text-[16px] flex items-center gap-2 text-[14px]"
-    onClick={exportCSV}
-  >
-    📄 Export as CSV
-  </button>
+        <div className="border border-[#CCCCCC] rounded-[12px] mb-[140px] pb-2 chart-container">
+          <div className="show-in-screenshot p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <img src={USFlag} alt="US Flag" className="w-5 h-5" />
+              <span className="text-[16px] font-[400]">
+                USD | {data.date} |{" "}
+                {data.impact === 3 ? (
+                  <img
+                    src={ImpactHigh}
+                    alt="High Impact"
+                    className="w-5 h-5 inline-block"
+                  />
+                ) : data.impact === 2 ? (
+                  <img
+                    src={ImpactMedium}
+                    alt="Medium Impact"
+                    className="w-5 h-5 inline-block"
+                  />
+                ) : (
+                  <img
+                    src={ImpactLow}
+                    alt="Low Impact"
+                    className="w-5 h-5 inline-block"
+                  />
+                )}
+              </span>
+            </div>
+            <h2 className="text-2xl font-semibold mb-4">{data.data}</h2>
+          </div>
+          <div className="flex items-center justify-between md:px-[40px] px-[12px] py-[20px] hide-in-screenshot flex-col md:flex-row">
+            <div className="flex gap-4">
+              {[
+                { label: "1Y", years: 1 },
+                { label: "3Y", years: 3 },
+                { label: "5Y", years: 5 },
+                { label: "10Y", years: 10 },
+                { label: "Max Year", years: 100 }, // Set a large number for "Max Year"
+              ].map(({ label, years }) => (
+                <button
+                  key={label}
+                  className={`px-4 py-2 rounded-lg md:text-[16px] text-[14px] ${
+                    selectedRange === label
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100"
+                  }`}
+                  onClick={() => {
+                    setSelectedRange(label);
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-4 mt-4">
+              <button
+                className="px-4 py-2 shadow-sm rounded-[12px] md:text-[16px] flex items-center gap-2 text-[14px]"
+                onClick={exportCSV}
+              >
+                📄 Export as CSV
+              </button>
 
-  <button
-    className="px-4 py-2 shadow-sm rounded-[12px] md:text-[16px] flex items-center gap-2 text-[14px]"
-    onClick={exportChart}
-  >
-    <img src={DownloadIcon} alt="Download Icon" className="w-5 h-5" />
-    Download Screenshot
-  </button>
-</div>
+              <button
+                className="px-4 py-2 shadow-sm rounded-[12px] md:text-[16px] flex items-center gap-2 text-[14px]"
+                onClick={exportChart}
+              >
+                <img
+                  src={DownloadIcon}
+                  alt="Download Icon"
+                  className="w-5 h-5"
+                />
+                Download Screenshot
+              </button>
+            </div>
           </div>
           <hr className="my-[10px] mx-3 h-0.5 border-t-0 bg-neutral-100" />
           {chartData ? (
-  <div className="w-full overflow-x-auto">
-    <div className="min-h-[300px] min-w-[700px] md:px-[40px] px-[12px] md:pb-[20px] pb-[16px]">
-      {selectedRange === "1Y" ? (
-        <Bar ref={chartRef} data={chartData} options={chartOptions} />
-      ) : (
-        <Line ref={chartRef} data={chartData} options={chartOptions} />
-      )}
-    </div>
-  </div>
-  
-) : (
-  <p>Loading chart...</p>
-)}
-
-
+            <div className="w-full overflow-x-auto">
+              <div className="min-h-[300px] min-w-[700px] md:px-[40px] px-[12px] md:pb-[20px] pb-[16px]">
+                {selectedRange === "1Y" ? (
+                  <Bar ref={chartRef} data={chartData} options={chartOptions} />
+                ) : (
+                  <Line
+                    ref={chartRef}
+                    data={chartData}
+                    options={chartOptions}
+                  />
+                )}
+              </div>
+            </div>
+          ) : (
+            <p>Loading chart...</p>
+          )}
         </div>
       </div>
+
+      {/* <div className="border border-[#CCCCCC] rounded-[12px] mb-[140px] pb-2 chart-container">
+        Lorem, ipsum.
+        <hr className="my-[10px] mx-3 h-0.5 border-t-0 bg-neutral-100" />
+        {chartData ? (
+          <div className="w-full overflow-x-auto">
+            <div className="min-h-[300px] min-w-[700px] md:px-[40px] px-[12px] md:pb-[20px] pb-[16px]">
+              {selectedRange === "1Y" ? (
+                <Bar ref={chartRef} data={chartData} options={chartOptions} />
+              ) : (
+                <Line ref={chartRef} data={chartData} options={chartOptions} />
+              )}
+            </div>
+          </div>
+        ) : (
+          <p>Loading chart...</p>
+        )}
+      </div> */}
     </div>
-    
   );
 };
 
